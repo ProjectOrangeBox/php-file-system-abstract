@@ -501,11 +501,13 @@ class fs
 	{
 		$dirname = self::resolve($dirname);
 
-		return ($recursive) ? self::_rmdir($dirname) : \rmdir($dirname);
+		return ($recursive) ? self::rmdirr($dirname) : \rmdir($dirname);
 	}
 
-	static protected function _rmdir(string $dirname): bool
+	static public function rmdirr(string $dirname): bool
 	{
+		$dirname = self::resolve($dirname);
+
 		$files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dirname, \RecursiveDirectoryIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
 
 		foreach ($files as $fileinfo) {
@@ -557,6 +559,18 @@ class fs
 	}
 
 	/**
+	 * move — alias for rename
+	 *
+	 * @param string $oldname
+	 * @param string $newname
+	 * @return bool
+	 */
+	static public function move(string $oldname, string $newname): bool
+	{
+		return \rename(self::resolve($oldname), self::resolve($newname));
+	}
+
+	/**
 	 * copy — Copies file
 	 *
 	 * @param string $source
@@ -568,7 +582,14 @@ class fs
 		return ($recursive) ? self::copyr($source, $dest) : \copy(self::resolve($source), self::resolve($dest));
 	}
 
-	static public function copyr(string $source, string $dest): void
+	/**
+	 * recursive copy — Copies file & folders recursively
+	 *
+	 * @param string $source
+	 * @param string $dest
+	 * @return bool
+	 */
+	static public function copyr(string $source, string $dest): bool
 	{
 		$source = self::resolve($source);
 		$dest = self::resolve($dest);
@@ -589,7 +610,9 @@ class fs
 			}
 		}
 
-		return \closedir($dir);
+		\closedir($dir);
+
+		return true;
 	}
 
 	/**
